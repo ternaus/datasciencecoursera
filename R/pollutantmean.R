@@ -20,17 +20,10 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
     path <- paste(c(directory, file_name), collapse="/")
     disjoint_data <- read.csv(path, header=T, sep=",")
     
-    if (as.integer(disjoint_data$ID[1]) %in% id){
+    ind = as.integer(disjoint_data$ID[1])
+    if ((ind >= id[1]) && (ind <= length(id) + id[1] - 1)) {
       joint_data <- rbind(joint_data, read.csv(path, header=T,sep=","))
     }
   } 
   mean(joint_data[, pollutant], na.rm=T)
 }
-
-x <- pollutantmean("specdata", "sulfate", 1:10)
-x
-y <- pollutantmean("specdata", "nitrate", 70:72)
-y
-z <- pollutantmean("specdata", "nitrate", 23)
-z
-# write.table(pollutantmean("specdata"), "result.csv")
