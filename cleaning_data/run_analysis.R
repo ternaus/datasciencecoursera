@@ -10,13 +10,13 @@ path = getwd()
 
 #test data collection
 x.test <- read.table(paste(c(path, "UCI HAR Dataset/test/X_test.txt"), collapse="/"))
-subject.test <- read.table(paste(c(path, "UCI HAR Dataset/test/subject_test.txt"), collapse="/"))
+# subject.test <- read.table(paste(c(path, "UCI HAR Dataset/test/subject_test.txt"), collapse="/"))
 y.test <- read.table(paste(c(path, "UCI HAR Dataset/test/y_test.txt"), collapse="/"))
 
 # train data collection
 
 x.train <- read.table(paste(c(path, "UCI HAR Dataset/train/X_train.txt"), collapse="/"))
-subject.train <- read.table(paste(c("UCI HAR Dataset/train/subject_train.txt"), collapse="/"))
+# subject.train <- read.table(paste(c("UCI HAR Dataset/train/subject_train.txt"), collapse="/"))
 y.train <- read.table(paste(c("UCI HAR Dataset/train/y_train.txt"), collapse="/"))
 
 
@@ -36,6 +36,8 @@ mean.std <-rbind(x.test, x.train)
 
 rm(x.test)
 rm(x.train)
+rm(y.test)
+rm(y.train)
 
 #filter, so that only regieme, mean() and std() are stored
 mean.std <- mean.std[grep("regieme|mean\\(\\)|std\\(\\)", colnames(mean.std))]
@@ -46,4 +48,6 @@ colnames(mean.std) <- sapply(colnames(mean.std), function(x) {gsub("\\(|\\)|-", 
 #now we will create another data frame, with the average of each variable for each activity and each subject
 mean.mean.std <- t(sapply(split(mean.std, mean.std$regieme), function(x) colMeans(x[, 2:ncol(x)])))
 
+mean.mean.std <- cbind(c("laying", "sitting", "standing", "walking", "walking downstairs", "walking updtairs"), mean.mean.std)
+colnames(mean.mean.std)[1] <- "regieme"
 write.table(mean.mean.std, "mean_mean_std.txt", row.name=FALSE)
