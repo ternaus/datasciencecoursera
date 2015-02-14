@@ -1,0 +1,70 @@
+---
+title: "Repeated Exponential Distribution vs Central Limit Theorem."
+author: "Vladimir Iglovikov"
+date: "02/13/2015"
+output: pdf_document
+---
+
+# Introduction
+
+In this project I will compare theoretical results for the Central limit theorem <http://en.wikipedia.org/wiki/Central_limit_theorem> with repeated numerical simulations.
+
+# Set up:
+
+ * Distribution that I work with - exponential <http://en.wikipedia.org/wiki/Exponential_distribution>.
+ * Mean $\lambda = 1 / \mu = 1 / 0.2 = 5$
+ * Standard deviation $sd = 1 / \mu = 1 / 0.2 = 5$
+ * Number of simulations $N = 1000$.
+ * Average will be over $n = 40$ exponents.
+
+# Numerical simulations
+
+```{r}
+ld = 0.2 #lambda - parameter of the distribution
+N = 1000 #Number of simulations
+n = 40
+mu = 1 / ld #theoretical value of the mean
+
+mns = NULL
+for (i in 1:N) {
+  mns = c(mns, mean(rexp(n, ld)))    
+}
+
+standard.error <- sd(mns) / sqrt(length(mns)) # standard error of the sampled data
+```
+
+Now I will compare mean, variance of the simulated data and theoretical predictions from the CLT.
+
+```{r}
+print(c("Mean of the exponentials = ", toString(mean(mns))))
+print(c("Theoretical mean = ", toString(mu)))
+print(c("Difference between sampled and theoretical mean = ", toString(mean(mns) - mu)))
+```
+
+```{r}
+print(c("Standard error of the sampled data = ", toString(standard.error)))
+```
+
+
+```{r}
+x <- mns
+y.list = density(x)
+plot(y.list, col="blue", main="Comparison of the theoretical and simulated data", lwd=3)
+abline(v=mean(mns), lty=2, col="blue", lwd=2)
+
+xfit <- seq(min(mns), max(mns), length=100) 
+yfit <- dnorm(xfit, mean = 1 / ld, sd=sd(x)) 
+
+lines(xfit, yfit, col="red", lwd=3)
+abline(v=1/ld, lty=2, col="red", lwd=2)
+
+legend("topright", c("probability density\n of the simulated data",
+                     "theoretical data"), fill=c("blue", "red"))
+```
+
+Plot of the histogram of the sampled data + gaussian curve that is predicted by the Central Limit Theorem. Dashed vertical lines correspond to the corresponding means.
+ 
+ 
+# Conclusion
+ 
+As we can see from the plot above, probability density of the generated data is very close to the normal data. Mean and standard deviation are almost identical. It can be shown from the numerical comparison and from the figure.
