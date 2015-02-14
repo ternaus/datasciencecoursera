@@ -1,0 +1,73 @@
+---
+title: "Ascorbic Acid vs Orange Juice Supplements as a Tooth Growth Supplement." 
+author: "Vladimir Iglovikov"
+date: "02/13/2015"
+output: pdf_document
+---
+
+#Introduction
+
+In this project I will analyse dataset from the Reference "C. I. Bliss (1952) The Statistics of Bioassay. Academic Press."
+
+In this dataset response is the length of odontoblasts (teeth) in each of 10 guinea pigs at each of three dose levels of Vitamin C (0.5, 1, and 2 mg) with each of two delivery methods (orange juice or ascorbic acid).
+
+In this dataset collected 60 observables with 3 variables:
+
+ * Tooth length
+ * Supplement type (VC or OJ)
+ * Dose in milligrams.
+
+#Numerics
+```{r results='hide', message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+data(ToothGrowth)
+
+#Data for ascorbic acid supplement is separated from the data with orange juice supplement.
+#New dataSets with corresponding names created: data.VC, data.OJ
+
+data.VC <- select(filter(ToothGrowth, supp == "VC"), len, dose)
+data.OJ <- select(filter(ToothGrowth, supp == "OJ"), len, dose)
+```
+## Is dependence linear?
+It looks natural to assume that more supplement pigs were consume, bigger length of the teeth. Dependence between these quantities can be assumed linear, that can be checked on the plot.
+
+```{r message=FALSE, warning=FALSE}
+ggplot(ToothGrowth, aes(dose, len, color=supp)) + ylab("length of teeth") + xlab("Dosage(Milligram)") + geom_smooth(method=lm, fullrange=T) + geom_point(shape=4)
+```
+
+Plot shows that for both supplements we see linear dependence, and slope is pretty similar. Thus it we need to check if both hypothsis are statistically similar.
+
+## How similar effect of both tooth growth supplements?
+
+First I will compare supplements in general.
+```{r warning=FALSE}
+"Mean for orange juice supplement:"
+mean(data.OJ$len)
+"mean for ascorbic acid supplement:"
+mean(data.VC$len)
+```
+We can see that mean of the OJ tooth length is bigger than mean of the VC tooth length. Thus we need t-test to check how significant is this difference.
+
+```{r warning=FALSE}
+t.test(data.OJ$len, data.VC$len, alternative="greater")
+```
+
+Now I will compare how effective different supplements at different dosages.
+```{r warning=FALSE}
+#dose = 0.5
+t.test(data.OJ[data.OJ$dose == 0.5, ]$len, data.VC[data.VC$dose == 0.5, ]$len, alternative="greater")
+#dose = 1
+t.test(data.OJ[data.OJ$dose == 1, ]$len, data.VC[data.VC$dose == 1, ]$len, alternative="greater")
+#dose = 2
+t.test(data.OJ[data.OJ$dose == 2, ]$len, data.VC[data.VC$dose == 2, ]$len, alternative="greater")
+```
+
+#Conclusion and assumptions.
+* In general, P-value 0.03032 with 95% confidence tells us that overall orange juice is more efficient.
+* For dosage 0.5, P-value 0.003179 with 95% confidence tells us that with dosage 0.5 milligram orange juice is more efficient.
+* For dosage 1, P-value 0.0005192 with 95% confidence tells us that with dosage 1 milligram orange juice is more efficient.
+* For dosage 2, P-value 0.5181 tells us that there is no statistical difference between supplements.
