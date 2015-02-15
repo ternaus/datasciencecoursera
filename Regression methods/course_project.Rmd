@@ -1,0 +1,64 @@
+---
+title: "Comparison of the Fuel Consumption for cars with different type of transmission."
+author: "Vladimir Iglovikov"
+date: "02/14/2015"
+output: pdf_document
+---
+# Introduction
+
+In this project question about fuel consumption for cars with manual versus automatic transmission based on the Motor Trend Car Road Tests. The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).
+
+## Source
+ Henderson and Velleman (1981), Building multiple regression models interactively. _Biometrics_, **37**, 391–411.
+
+## Variables
+
+* __mpg__ -	 Miles/(US) gallon
+* __cyl__ -	 Number of cylinders
+* __disp__ - Displacement (cu.in.)
+* __hp__ - Gross horsepower
+* __drat__ - Rear axle ratio
+* __wt__ - Weight (lb/1000)
+* __qsec__ - 1/4 mile time
+* __vs__ - V/S
+* __am__ - Transmission (0 = automatic, 1 = manual)
+* __gear__ - Number of forward gears
+* __carb__ - Number of carburetors
+
+# Analysis.
+There are 10 variables that can affect **mpg**, but exploritary analysis(in appendix) showed that if we consider only **cyl**, **qsec** and **wt** we will get model that explains $84\%$ of the data (Adjusted $R^2 = 0.8336$, overall P-value < 0.001).
+
+Main factors that affect milage:
+
+* For every change in 1000lb, **mpg** decreases by 3.9165 miles/gallon
+* For every 1 second increase in time to cover quarter mile distance car's milage can cover extra 1.2259 miles/gallon.
+* Type of the transmission has big impact on the milage. Same car but with manual transmission will be able to cover 2.9358 miles more per gallon.
+
+Qualitatively these results are not surprising. First of all, Some variables among these 10 in the dataset depend on each other, say more cylinders will lead to  more horsepower which correspondingly will decrease mpg value. On the other hand if car is light and powerful one can expect that **qsec** variable will decrease.
+
+#Counclusion
+Our analysis, based on the __mtcars__ dataset showed that cars with manual transmission are more effective. Rate of change of the conditional mean is 2.93 miles/gallon and we are $95\%$ confident that this value is between 0.05 and 5.82 gallons per mile.
+
+#Appendix
+```{r, warning=FALSE, message=FALSE}
+data(mtcars)#load data
+
+fit.full <- lm(mpg ~ ., data=mtcars)
+fit.best <- step(fit.full, direction="backward")
+```
+
+```{r}
+#fitted coefficients for best mdoel
+summary(fit.best)
+
+#confidence interval of the bestfit
+confint(fit.best, "am", level=0.95)
+```
+
+```{r}
+par(mfrow=c(2, 2))
+plot(fit.best)
+```
+```{r}
+boxplot(mpg ~ am, data = mtcars, col = "red", ylab = "miles/gallon", names=c("Automatic", "Manual"))
+```
