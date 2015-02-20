@@ -1,0 +1,84 @@
+---
+title: "Course project for machine learning class."
+author: "Vladimir Iglovikov"
+date: "02/16/2015"
+output: html_document
+---
+#Introduction
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <http://groupware.les.inf.puc-rio.br/har> (see the section on the Weight Lifting Exercise Dataset). 
+
+#Data 
+```{r}
+setwd("~/workspace/datasciencecoursera/Machine learning")
+training <- read.csv("pml-training.csv")
+testing <- read.csv("pml-testing.csv")
+```
+
+```{r}
+dim(training)
+```
+Training dataset has 192622 observables of the 160 variables, although not all of them are relevant, and this data requires cleaning.
+
+#Preprocessing
+
+Partition train data into train($70\%$) and validation ($30\%$).
+```{r}
+library(caret)
+
+set.seed(234123)
+#First we will split training set into training and validation datasets
+trainset <- createDataPartition(training$classe, p = 0.7, list = FALSE)
+train <- training[trainset, ]
+validate <- training[-trainset, ]
+```
+Now we need to exculude variables which are not relevant to the problem and variables that have less than $60\%$ assigned or missing values.
+```{r}
+non.relevant <- c("user_name", "X", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window")
+
+number.missing <- function(column.to.check) {
+  sum(!(is.na(column.to.check)| column.to.check == ""))
+}
+
+columns.to.exclude <- sapply(train, number.missing)
+
+to.exclude <- c(names(train)[columns.to.exclude < 0.6 * nrow(train)], non.relevant)
+
+train.filtered <- train[ ,-which(names(train) %in% to.exclude)]
+```
+After cleaning we have only 53 variables.
+
+#Training
+```{r}
+fit.rf <- train(classe ~. , data=train.filtered, method="rf")
+```
+
+#Validation
+```{r}
+prediction.validate <- predict(fit.rf, validate)
+print(confusionMatrix(prediction.validate, validate$classe))
+```
+As we can see, accuracy on the vaidation set is 0.99 with 95% confidence interval (0.9902, 0.9947).
+
+#Testing
+```{r}
+prediction.test <- predict(fit.rf, testing)
+```
+
+Predicted values on the test set:
+```{r}
+print(prediction.test)
+```
+
+Save results to files, for submission.
+```{r}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(as.vector(prediction.test))
+```
+
